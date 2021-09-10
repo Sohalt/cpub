@@ -94,5 +94,51 @@
           inherit (nixpkgsFor.${system}) cpub;
         });
       defaultPackage = forAllSystems (system: self.packages.${system}.cpub);
+      nixosModules.cpub = { config, lib, ... }:
+        with lib;
+        let cfg = config.services.cpub;
+        in
+        {
+        options = {
+          services.cpub = {
+            enable = mkEnableOption "Cpub, a semantic ActivityPub server";
+            domain = mkOption {
+              type = types.str;
+              default = "localhost";
+            };
+            port = mkOption {
+              type = types.port;
+              default = 4000;
+            };
+	    databaseDir = mkOption {
+	      type = str;
+	      default = "/var/lib/cpub";
+            };
+	    #secrets
+	    cookieFile = mkOption {
+	      type = str;
+	    };
+	    secretKeyBaseFile = mkOption {
+	      type = str;
+	    };
+	    jokenRSAKey = mkOption {
+	      type = str;
+	    };
+          };
+        };
+        config = mkIf cfg.enable {
+          systemd.services.cpub = {
+	    description = "";
+	    after = [ "network.target" ];
+	    wantedBy = [ "multi-user.target" ];
+
+	    environment.COOKIE = "<(${cookieFile})"
+	    
+	    serviceConfig = {
+	      ExecStart = "${pkgs.cpub}/bin/cpub start";
+	    };
+	  };
+        };
+      };
     };
 }
