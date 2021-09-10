@@ -96,6 +96,7 @@ defmodule CPub.MixProject do
       # User passwords
       # TODO: replace argon2_elixir with argon2i from :monocypher
       {:argon2_elixir, "~> 2.3"},
+      {:monocypher, git: "https://gitlab.com/openengiadina/erlang-monocypher.git", branch: "main"},
 
       # dev & test
       {:stream_data, "~> 0.5"},
