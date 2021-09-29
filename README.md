@@ -39,6 +39,7 @@ Releases are tagged commits on the `main` branch. To make a new release:
 - [ ] Make sure Changelog is up-to-date
 - [ ] Start a merge of `develop` into `main` with `git merge --no-ff --no-commit develop`. 
 - [ ] Update version in Changelog and `mix.exs`
+- [ ] Run `mix2nix > deps.nix`
 - [ ] Conclude merge with `git commit`
 - [ ] Add a git tag with `git tag -a v0.x -m "v0.x"`
 - [ ] Push to upstream branch with `git push upstream main` and `git push upstream main --tags`
