@@ -41,3 +41,7 @@ cpub-*.tar
 
 # Local database
 /db/
+
+# Devshell
+.nix-mix/
+.nix-hex/

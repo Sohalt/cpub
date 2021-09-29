@@ -22,7 +22,12 @@
       # Nixpkgs instantiated for supported system types.
       nixpkgsFor = forAllSystems (system: import nixpkgs { inherit system; overlays = [ self.overlay ]; });
 
-      mixNixDeps' = pkgs: with pkgs; import ./deps.nix {
+    in
+    {
+      overlay = final: prev: 
+	{
+        cpub = with final; let
+          mixNixDeps = import ./deps.nix {
             inherit beamPackages lib;
             overrides = (final: prev: {
               mime = prev.mime.override {
@@ -76,37 +81,41 @@
               };
             });
           };
-    in
-    {
-      overlay = final: prev: {
-        cpub = with final; let
-          mixNixDeps = mixNixDeps' final;
         in
-          beamPackages.mixRelease {
-            inherit mixNixDeps;
-            pname = "cpub";
-            src = ./.;
-            version = "0.2.0"; # FIXME
-            preConfigure = ''
-              touch config/prod.secret.exs
-            '';
-            postInstall = ''
-              echo "${beamPackages.erlang.version}" > $out/OTP_VERSION
-            '';
-          };
+        beamPackages.mixRelease {
+          inherit mixNixDeps;
+          pname = "cpub";
+          src = ./.;
+          version = "0.2.0"; # FIXME
+          preConfigure = ''
+            touch config/prod.secret.exs
+          '';
+          postInstall = ''
+            echo "${beamPackages.erlang.version}" > $out/OTP_VERSION
+          '';
+        };
       };
       packages = forAllSystems (system:
         {
           inherit (nixpkgsFor.${system}) cpub;
         });
       defaultPackage = forAllSystems (system: self.packages.${system}.cpub);
-      devShell = forAllSystems (system:
+      devShell = forAllSystems (system: self.devShells.${system}.dev);
+      devShells = forAllSystems (system:
         let
-          pkgs = nixpkgsFor."${system}";
+          pkgs = nixpkgsFor.${system};
         in
-        pkgs.mkShell {
-          inputsFrom = builtins.attrValues self.packages.${system};
+        {
+          dev = import ./shell.nix {
+            inherit pkgs;
+            MIX_ENV = "dev";
+          };
+          test = import ./shell.nix {
+            inherit pkgs;
+            MIX_ENV = "test";
+          };
         });
+
       nixosModules.cpub = { config, lib, ... }:
         with lib;
         let cfg = config.services.cpub;
@@ -155,3 +164,4 @@
         };
     };
 }
+ 
