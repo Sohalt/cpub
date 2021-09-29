@@ -2,7 +2,7 @@
 
 with pkgs; mkShell
 {
-  buildInputs = [ mix2nix ]
+  buildInputs = [ mix2nix rebar3 ]
     ++ lib.optional stdenv.isLinux inotify-tools
     ++ lib.optionals stdenv.isDarwin
     (with darwin.apple_sdk.frameworks; [ CoreFoundation CoreServices ]);
@@ -20,6 +20,8 @@ with pkgs; mkShell
     mix local.hex --if-missing
     export LANG=en_US.UTF-8
     export ERL_AFLAGS="-kernel shell_history enabled"
+    export MIX_REBAR3="${rebar3}/bin/rebar3";
+
 
     # elixir
     export POOL_SIZE=15
